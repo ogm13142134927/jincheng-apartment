@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>金城公寓 - 合作商</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="金城租房">
+    <link rel="icon" type="image/svg+xml" href="/icon.svg">
+    <link rel="apple-touch-icon" href="/icon-192.svg">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:"微软雅黑","PingFang SC",sans-serif}
+        body{background:#f5f0eb;min-height:100vh;color:#2c241a}
+        .header{background:linear-gradient(135deg,#3d3226,#2c241a);color:#d4c9b8;padding:20px 16px 14px;position:relative}
+        .header .back{position:absolute;left:12px;top:20px;font-size:20px;cursor:pointer;color:#b09670;padding:4px}
+        .header h1{font-size:18px;font-weight:bold;text-align:center;background:linear-gradient(90deg,#c4a882,#d4c9b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .header .sub{text-align:center;font-size:11px;color:#8a7a6a;margin-top:3px}
+        .container{max-width:750px;margin:0 auto;padding:12px;padding-bottom:70px}
+        .section-title{font-size:13px;font-weight:bold;color:#b09670;margin:14px 0 8px;display:flex;align-items:center;gap:8px}
+        .section-title:after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(180,150,110,0.2),transparent)}
+        .card{background:#fff;border-radius:12px;padding:16px;border:2px solid #e8e0d4;margin-bottom:10px}
+        .form-group{margin-bottom:14px}
+        .form-group label{font-size:12px;color:#8a7a6a;display:block;margin-bottom:4px;font-weight:600}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #e0d8cc;background:#faf8f5;font-size:13px;outline:none;color:#2c241a;transition:border 0.2s}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#b09670}
+        .form-group input::placeholder,.form-group textarea::placeholder{color:#c4b8a8}
+        .form-group textarea{resize:vertical;min-height:60px;font-family:inherit}
+        .form-row{display:flex;gap:10px}
+        .form-row .form-group{flex:1}
+        .form-hint{font-size:10px;color:#c4b8a8;margin-top:3px}
+        .photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+        .photo-grid .photo-box{aspect-ratio:4/3;border-radius:8px;border:1.5px dashed #d4c8b8;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:24px;color:#c4b8a8;cursor:pointer;overflow:hidden;position:relative;background:#faf8f5}
+        .photo-grid .photo-box:active{background:#f0ebe4}
+        .photo-grid .photo-box img{width:100%;height:100%;object-fit:cover}
+        .photo-grid .photo-box .del{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(200,80,60,0.85);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
+        .photo-grid .photo-box .num{position:absolute;bottom:3px;left:3px;font-size:9px;color:#fff;background:rgba(0,0,0,0.4);padding:1px 5px;border-radius:4px}
+        .photo-grid .photo-box .add-text{font-size:10px;color:#c4b8a8;margin-top:2px}
+        .commission-label{display:flex;align-items:center;gap:6px}
+        .commission-label .badge{font-size:9px;background:#f0e8dc;color:#8a7a6a;padding:2px 8px;border-radius:6px}
+        .tag-select{display:flex;gap:6px;flex-wrap:wrap}
+        .tag-select .tag{display:flex;align-items:center;gap:4px;padding:8px 14px;border-radius:8px;border:1.5px solid #e0d8cc;background:#faf8f5;cursor:pointer;font-size:12px;color:#8a7a6a;transition:all 0.15s}
+        .tag-select .tag:active{transform:scale(0.96)}
+        .tag-select .tag.selected{border-color:#b09670;background:#f5ede0;color:#8a7355;font-weight:600}
+        .tag-select .tag input[type=radio]{display:none}
+        .submit-btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;background:linear-gradient(180deg,#b09670,#8a7355);color:#fff;margin-top:6px}
+        .submit-btn:active{transform:scale(0.97)}
+        .submit-btn:disabled{opacity:0.5;cursor:not-allowed}
+        .tabs{display:flex;gap:0;margin-bottom:12px;border-radius:10px;overflow:hidden;border:1.5px solid #e0d8cc}
+        .tabs .tab{flex:1;padding:10px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;background:#faf8f5;color:#8a7a6a;transition:all 0.15s}
+        .tabs .tab.active{background:#fff;color:#2c241a;box-shadow:inset 0 -2px 0 #b09670}
+        .page{display:none}
+        .page.show{display:block}
+        .empty-state{text-align:center;padding:30px 20px;color:#c4b8a8;font-size:13px;line-height:1.6}
+
+        /* 信用分 */
+        .credit-banner{background:linear-gradient(135deg,#3d3226,#2c241a);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+        .credit-banner .score{font-size:28px;font-weight:bold;background:linear-gradient(90deg,#c4a882,#d4c9b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;min-width:50px;text-align:center}
+        .credit-banner .info{flex:1}
+        .credit-banner .info .lbl{font-size:11px;color:#8a7a6a}
+        .credit-banner .info .bar-wrap{height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-top:5px;overflow:hidden}
+        .credit-banner .info .bar-fill{height:100%;border-radius:3px;transition:width 0.5s;background:linear-gradient(90deg,#b09670,#d4c9b8)}
+        .credit-banner .warning{font-size:10px;color:#c86a5a;font-weight:600;background:rgba(200,80,60,0.1);padding:4px 10px;border-radius:6px;border:1px solid rgba(200,80,60,0.15)}
+
+        /* 房源卡片（我的房源） */
+        .my-listing{background:#fff;border-radius:12px;border:2px solid #e8e0d4;margin-bottom:8px;overflow:hidden}
+        .my-listing .top{padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start}
+        .my-listing .top h4{font-size:14px;color:#2c241a;font-weight:600}
+        .my-listing .top .st{padding:2px 10px;border-radius:10px;font-size:10px;font-weight:bold}
+        .my-listing .top .st.live{background:#e8f0e0;color:#5a7a4a}
+        .my-listing .top .st.off{background:#f0e0dc;color:#8a5a4a}
+        .my-listing .meta{padding:0 14px 8px;font-size:11px;color:#8a7a6a;line-height:1.5}
+        .my-listing .meta .comm-tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;background:#f5e6cc;color:#8b7355;margin:1px}
+        .my-listing .meta .redpack-tag{background:#f5d0d0;color:#8a3a3a}
+        .my-listing .btns{display:flex;border-top:1px solid #f0ebe3}
+        .my-listing .btns button{flex:1;padding:10px;border:none;font-size:11px;font-weight:600;cursor:pointer;background:#faf8f5;color:#8a7a6a;transition:all 0.1s}
+        .my-listing .btns button:active{background:#f0ebe4}
+        .my-listing .btns button.danger{color:#c86a5a}
+        .my-listing .btns button.green{color:#5a8a4a}
+        .my-listing .thumbs{display:flex;gap:3px;padding:0 14px 8px;overflow-x:auto}
+        .my-listing .thumbs img{width:50px;height:38px;border-radius:4px;object-fit:cover;border:1px solid #e8e0d4;flex-shrink:0}
+
+        /* 诚信协议 */
+        .agreement{background:#fdf8f0;border:1.5px solid #e8d4b8;border-radius:10px;padding:12px;margin-bottom:12px}
+        .agreement .title{font-size:12px;font-weight:700;color:#8a7355;margin-bottom:6px}
+        .agreement .rules{font-size:10px;color:#8a7a6a;line-height:1.7;padding-left:12px}
+        .agreement .rules li{margin-bottom:2px}
+        .agreement .check{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #e8d4b8}
+        .agreement .check input{width:16px;height:16px;cursor:pointer}
+        .agreement .check label{font-size:11px;color:#2c241a;cursor:pointer}
+
+        /* 家具电器勾选网格 */
+        .appliance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}
+        .appliance-grid .app-item{display:flex;align-items:center;gap:4px;padding:6px 8px;border-radius:8px;border:1.5px solid #e0d8cc;background:#faf8f5;cursor:pointer;font-size:11px;color:#8a7a6a;transition:all 0.12s;user-select:none}
+        .appliance-grid .app-item:active{transform:scale(0.96)}
+        .appliance-grid .app-item.checked{border-color:#b09670;background:#f5ede0;color:#8a7355;font-weight:600}
+
+        /* 信用规则弹窗 */
+        .rule-pop{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:center;justify-content:center}
+        .rule-pop.show{display:flex}
+        .rule-pop .box{background:#fff;border-radius:16px;padding:20px;max-width:320px;width:90%;max-height:70vh;overflow-y:auto}
+        .rule-pop .box h3{font-size:15px;color:#2c241a;margin-bottom:10px}
+        .rule-pop .box .r{display:flex;justify-content:space-between;padding:6px 0;font-size:11px;border-bottom:1px solid #f0ebe3}
+        .rule-pop .box .r span{color:#2c241a}
+        .rule-pop .box .r .p{font-weight:bold}
+        .rule-pop .box .r .p.green{color:#5a8a4a}
+        .rule-pop .box .r .p.red{color:#c86a5a}
+        .rule-pop .box .close-btn{width:100%;padding:10px;border:none;border-radius:8px;background:#b09670;color:#fff;font-size:13px;font-weight:600;cursor:pointer;margin-top:12px}
+    </style>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js');});}</script>
+</head>
+<body>
+    <div class="header">
+        <div class="back" onclick="history.back()">←</div>
+        <h1>🤝 合作商端</h1>
+        <div class="sub">中介 · 二房东 · 房源挂靠 · 佣金结算</div>
+    </div>
+
+    <div class="container">
+        <!-- 信用分 -->
+        <div class="credit-banner" id="creditBanner" onclick="showRules()">
+            <div class="score" id="creditScore">50</div>
+            <div class="info">
+                <div class="lbl">信用积分 · 初始50分 <span style="font-size:9px;color:#6a5a4a;">（点击查看规则）</span></div>
+                <div class="bar-wrap"><div class="bar-fill" id="creditBar" style="width:25%"></div></div>
+            </div>
+            <div id="creditWarn" class="warning" style="display:none">⚠️ 低于40</div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('upload')">📤 上传房源</div>
+            <div class="tab" onclick="switchTab('my')">📋 我的房源</div>
+            <div class="tab" onclick="switchTab('earn')">💰 收益</div>
+        </div>
+
+        <!-- ===== 上传房源 ===== -->
+        <div class="page show" id="pageUpload">
+            <div class="card">
+                <div class="section-title" style="margin:0 0 12px 0">📸 房源照片</div>
+                <div class="photo-grid" id="photoGrid">
+                    <div class="photo-box" onclick="addPhoto(0)"><span>+</span><span class="add-text">上传</span></div>
+                </div>
+                <div class="form-hint">最多7张，点击上传，点击已有图片可删除</div>
+            </div>
+
+            <div class="card">
+                <div class="form-group"><label>房源标题 <span style="color:#c44">*</span></label><input id="title" placeholder="如「梅溪湖精装一居室」"></div>
+                <div class="form-group"><label>地址 <span style="color:#c44">*</span></label><input id="address" placeholder="如「梅溪湖 · 达美D6区」"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>面积</label><input id="area" placeholder="如 45㎡"></div>
+                    <div class="form-group"><label>朝向</label><input id="orient" placeholder="如 朝南"></div>
+                </div>
+                <div class="form-group"><label>家具电器 <span style="font-size:10px;color:#8a7a6a;">（点击切换，默认全选）</span></label><div class="appliance-grid" id="applianceGrid"></div><input type="hidden" id="appliances"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>月租金 <span style="color:#c44">*</span></label><input id="price" type="number" placeholder="如 1500" min="1"></div>
+                    <div class="form-group"><label>最少租赁</label><input id="minRent" type="number" placeholder="1" min="1" value="1"></div>
+                    <div class="form-group"><label>单位</label>
+                        <select id="minRentUnit"><option value="月">月</option><option value="天">天</option><option value="年">年</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title" style="margin:0 0 10px 0">💼 佣金设置</div>
+                <div class="commission-label">
+                    <span style="font-size:12px;font-weight:600;color:#8a7a6a;">年租佣金比例</span>
+                    <span class="badge">不对外显示</span>
+                </div>
+                <div class="tag-select" style="margin-top:6px">
+                    <span class="tag" onclick="selectCommission(this,30)">30%</span>
+                    <span class="tag" onclick="selectCommission(this,40)">40%</span>
+                    <span class="tag active" onclick="selectCommission(this,50)">50%</span>
+                    <span class="tag" onclick="selectCommission(this,60)">60%</span>
+                    <span class="tag" onclick="selectCommission(this,70)">70%</span>
+                    <span class="tag" onclick="selectCommission(this,80)">80%</span>
+                </div>
+                <div class="form-hint">佣金比例高 → 平台优先推荐带看 · 成交更快</div>
+
+                <div style="margin-top:14px;">
+                    <label style="font-size:12px;color:#8a7a6a;font-weight:600;">叠加红包</label>
+                    <div class="tag-select" style="margin-top:4px">
+                        <span class="tag active" onclick="selectRedpack(this,0)">无</span>
+                        <span class="tag" onclick="selectRedpack(this,100)">¥100</span>
+                        <span class="tag" onclick="selectRedpack(this,200)">¥200</span>
+                    </div>
+                    <div class="form-hint">有红包的房源优先展示</div>
+                </div>
+            </div>
+
+            <!-- 诚信协议 -->
+            <div class="agreement">
+                <div class="title">📜 诚信承诺书</div>
+                <ol class="rules">
+                    <li>本人保证所提交房源信息真实有效，价格与实际一致</li>
+                    <li>房源已出租后，承诺在24小时内主动下架</li>
+                    <li>如有虚假信息（价格虚低、已租未下架等），自愿接受平台处罚</li>
+                    <li>发布即视为同意以上条款</li>
+                </ol>
+                <div class="check">
+                    <input type="checkbox" id="agreeCheck">
+                    <label for="agreeCheck" onclick="">我已阅读并同意以上诚信承诺</label>
+                </div>
+            </div>
+
+            <button class="submit-btn" id="submitBtn" onclick="submitListing()">提交房源</button>
+        </div>
+
+        <!-- ===== 我的房源 ===== -->
+        <div class="page" id="pageMy">
+            <div id="myListings"><div class="empty-state">加载中...</div></div>
+        </div>
+
+        <!-- ===== 收益 ===== -->
+        <div class="page" id="pageEarn">
+            <div style="display:flex;gap:6px;margin-bottom:10px">
+                <span class="tab-comm active" id="tabComm" onclick="switchEarnTab('comm')" style="flex:1;text-align:center;padding:8px;border-radius:8px;font-size:12px;font-weight:600;background:#b09670;color:#fff;cursor:pointer">佣金记录</span>
+                <span class="tab-view" id="tabView" onclick="switchEarnTab('view')" style="flex:1;text-align:center;padding:8px;border-radius:8px;font-size:12px;font-weight:600;background:#f0e8dc;color:#8a7a6a;cursor:pointer">带看记录</span>
+            </div>
+            <div id="earnContent"><div class="empty-state">📊 加载中...</div></div>
+        </div>
+    </div>
+
+    <!-- 信用规则弹窗 -->
+    <div class="rule-pop" id="rulePop" onclick="if(event.target===this)closeRules()">
+        <div class="box">
+            <h3>📋 信用积分规则</h3>
+            <div class="r"><span>初始积分</span><span class="p">50分</span></div>
+            <div class="r"><span>✅ 提交房源审核通过</span><span class="p green">+10分</span></div>
+            <div class="r"><span>✅ 成交签约成功</span><span class="p green">+50分</span></div>
+            <div class="r"><span>📢 诚信分高→平台优先推荐带看</span><span class="p green">排名靠前</span></div>
+            <div class="r"><span>💼 佣金比例高→优先展示</span><span class="p green">带看意愿强</span></div>
+            <div class="r"><span>❌ 价格虚低不真实</span><span class="p red">-20分</span></div>
+            <div class="r"><span>❌ 已租未下架</span><span class="p red">-30分</span></div>
+            <div style="font-size:10px;color:#c86a5a;padding-top:8px;line-height:1.5;">⚠️ 低于40分时信用亮红牌警示，平台将人工排查，电话沟通后仍不改正则强制下架房源</div>
+            <button class="close-btn" onclick="closeRules()">知道了</button>
+        </div>
+    </div>
+
+    <input type="file" id="photoInput" accept="image/*" style="display:none" multiple>
+
+    <!-- 海报弹窗 -->
+    <div class="rule-pop" id="posterModal" onclick="if(event.target===this)closePoster()">
+        <div class="box" style="max-width:360px;padding:14px">
+            <div style="text-align:center;font-size:11px;color:#5a7a4a;margin-bottom:10px">👇 长按图片保存 · 分享朋友圈</div>
+            <div id="posterPreview" style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+                <div id="posterContent" style="padding:0">
+                    <div id="posterHeader" style="background:linear-gradient(135deg,#5a7a4a,#3a5a2a);color:#fff;padding:20px 16px 14px;text-align:center">
+                        <div id="posterTitle" style="font-size:18px;font-weight:700;line-height:1.4">加载中...</div>
+                        <div id="posterPrice" style="font-size:22px;font-weight:700;margin-top:6px"></div>
+                        <div id="posterLocation" style="font-size:11px;opacity:.8;margin-top:4px"></div>
+                    </div>
+                    <div id="posterImages" style="display:flex;gap:2px;overflow:hidden;max-height:180px"></div>
+                    <div style="padding:12px 14px">
+                        <div id="posterDesc" style="font-size:12px;color:#5a4a3a;line-height:1.6;margin-bottom:8px"></div>
+                        <div id="posterTags" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px"></div>
+                        <div id="posterContact" style="border-top:1px dashed #e8e0d4;padding-top:8px;font-size:11px;color:#8a7a6a;text-align:center">
+                            📞 <span id="posterPhone"></span> · 💚 <span id="posterWechat"></span>
+                        </div>
+                        <div style="margin-top:8px;text-align:center;font-size:9px;color:#aaa">金城公寓 · 扫码看房</div>
+                    </div>
+                    <div id="posterQR" style="background:#f0ebe6;padding:10px;text-align:center;font-size:10px;color:#6a5a4a">
+                        扫描二维码查看房源详情
+                        <div id="qrCode" style="margin:6px auto;width:80px;height:80px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:6px;border:1px solid #ddd">📱</div>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+                <button onclick="window.open(document.getElementById('posterLink').href)" style="flex:1;padding:10px;border:none;border-radius:8px;background:#b09670;color:#fff;font-size:13px;cursor:pointer">📤 分享链接</button>
+                <button onclick="closePoster()" style="flex:1;padding:10px;border:none;border-radius:8px;background:#e0d8cc;color:#5a4a3a;font-size:13px;cursor:pointer">关闭</button>
+            </div>
+            <a id="posterLink" style="display:none"></a>
+        </div>
+    </div>
+
+<script>
+var PARTNER_ID = localStorage.getItem('partner_id') || 'partner_' + Date.now();
+if(!localStorage.getItem('partner_id')){
+    localStorage.setItem('partner_id', PARTNER_ID);
+}
+var photos = [];
+var commissionRate = 50;
+var redpackAmount = 0;
+var APPLIANCE_LIST = ["空调","冰箱","洗衣机","电视","热水器","油烟机","1.5米床","1.8米床","梳妆台","衣柜","床头柜"];
+
+// 初始化家具电器勾选
+function initAppliances(){
+    var grid = document.getElementById('applianceGrid');
+    var h = '';
+    for(var i=0;i<APPLIANCE_LIST.length;i++){
+        h += '<div class="app-item checked" onclick="toggleApp(this,'+i+')">✅ '+APPLIANCE_LIST[i]+'</div>';
+    }
+    grid.innerHTML = h;
+    updateAppliances();
+}
+function toggleApp(el,i){
+    el.classList.toggle('checked');
+    if(el.classList.contains('checked')) el.innerHTML = '✅ '+APPLIANCE_LIST[i];
+    else el.innerHTML = '☐ '+APPLIANCE_LIST[i];
+    updateAppliances();
+}
+function updateAppliances(){
+    var items = document.querySelectorAll('.appliance-grid .app-item');
+    var vals = [];
+    for(var i=0;i<items.length;i++){
+        if(items[i].classList.contains('checked')) vals.push(APPLIANCE_LIST[i]);
+    }
+    document.getElementById('appliances').value = vals.join('、');
+}
+
+// 切换tab
+function switchTab(tab){
+    document.querySelectorAll('.tabs .tab').forEach(function(t,i){
+        t.classList.toggle('active', (i===0&&tab==='upload')||(i===1&&tab==='my')||(i===2&&tab==='earn'));
+    });
+    document.getElementById('pageUpload').style.display = tab==='upload'?'block':'none';
+    document.getElementById('pageMy').style.display = tab==='my'?'block':'none';
+    document.getElementById('pageEarn').style.display = tab==='earn'?'block':'none';
+    if(tab==='my') loadMyListings();
+    if(tab==='earn') loadEarnings();
+}
+
+// 信用分
+function updateCredit(score){
+    document.getElementById('creditScore').textContent = score;
+    var pct = Math.min(100, Math.max(0, score));
+    document.getElementById('creditBar').style.width = pct + '%';
+    var warn = document.getElementById('creditWarn');
+    if(score < 40){
+        warn.style.display = 'block';
+        document.getElementById('creditBanner').style.border = '1px solid rgba(200,80,60,0.3)';
+    } else {
+        warn.style.display = 'none';
+        document.getElementById('creditBanner').style.border = 'none';
+    }
+}
+
+function showRules(){ document.getElementById('rulePop').classList.add('show'); }
+function closeRules(){ document.getElementById('rulePop').classList.remove('show'); }
+
+// 图片上传
+function addPhoto(idx){
+    if(idx < photos.length){
+        photos.splice(idx,1);
+        renderPhotos();
+        return;
+    }
+    if(photos.length >= 7){ showTip('最多上传7张图片'); return; }
+    var input = document.getElementById('photoInput');
+    input.value = '';
+    input.click();
+    input.onchange = function(e){
+        var files = e.target.files;
+        for(var i=0;i<files.length && photos.length<7;i++){
+            (function(file){
+                var reader = new FileReader();
+                reader.onload = function(ev){ photos.push(ev.target.result); renderPhotos(); };
+                reader.readAsDataURL(file);
+            })(files[i]);
+        }
+    };
+}
+
+function renderPhotos(){
+    var grid = document.getElementById('photoGrid');
+    var html = '';
+    for(var i=0;i<Math.min(photos.length,7);i++){
+        html += '<div class="photo-box" onclick="addPhoto('+i+')"><img src="'+photos[i]+'"><span class="del" onclick="event.stopPropagation();photos.splice('+i+',1);renderPhotos()">✕</span><span class="num">'+(i+1)+'</span></div>';
+    }
+    if(photos.length < 7){
+        html += '<div class="photo-box" onclick="addPhoto('+photos.length+')"><span>+</span><span class="add-text">上传</span></div>';
+    }
+    grid.innerHTML = html;
+}
+
+function selectCommission(el,rate){ commissionRate = rate; document.querySelectorAll('.tag-select .tag').forEach(function(t){t.classList.remove('active')}); el.classList.add('active'); }
+function selectRedpack(el,amount){ redpackAmount = amount; document.querySelectorAll('.tag-select .tag').forEach(function(t){t.classList.remove('active')}); el.classList.add('active'); }
+
+// 提交房源
+function submitListing(){
+    var agree = document.getElementById('agreeCheck');
+    if(!agree.checked){ showTip('请先勾选诚信承诺'); return; }
+
+    var title = document.getElementById('title').value.trim();
+    var address = document.getElementById('address').value.trim();
+    var price = document.getElementById('price').value.trim();
+    if(!title){ showTip('请填写房源标题'); return; }
+    if(!address){ showTip('请填写地址'); return; }
+    if(!price || parseFloat(price) <= 0){ showTip('请填写正确的月租金'); return; }
+
+    var data = {
+        type: 'listing',
+        partner_id: PARTNER_ID,
+        title: title,
+        address: address,
+        area: document.getElementById('area').value.trim(),
+        orient: document.getElementById('orient').value.trim(),
+        appliances: document.getElementById('appliances').value.trim(),
+        price: parseFloat(price),
+        minRent: document.getElementById('minRent').value,
+        minRentUnit: document.getElementById('minRentUnit').value,
+        commission: commissionRate,
+        redpack: redpackAmount,
+        photos: photos
+    };
+
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = '提交中...';
+
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/jincheng/listing?_t='+Date.now(), false);
+        xhr.setRequestHeader('Content-Type','application/json');
+        xhr.send(JSON.stringify(data));
+        var d = JSON.parse(xhr.responseText);
+        btn.disabled = false; btn.textContent = '提交房源';
+        if(d.code === 0){
+            showTip('✅ 发布成功！信用分 +10');
+            if(d.listing && d.listing.partner_name) localStorage.setItem('partner_name', d.listing.partner_name);
+            document.getElementById('title').value = '';
+            document.getElementById('address').value = '';
+            document.getElementById('area').value = '';
+            document.getElementById('orient').value = '';
+            document.getElementById('appliances').value = '';
+            document.getElementById('price').value = '';
+            photos = [];
+            renderPhotos();
+            agree.checked = false;
+            loadCredit();
+            switchTab('my');
+        } else {
+            showTip('❌ 发布失败：'+(d.msg||'请稍后重试'));
+        }
+    } catch(e){
+        btn.disabled = false; btn.textContent = '提交房源';
+        showTip('❌ 网络异常，请检查后重试');
+    }
+}
+
+// 加载我的房源
+function loadMyListings(){
+    var el = document.getElementById('myListings');
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/jincheng/partner_listings?partner_id='+PARTNER_ID+'&_t='+Date.now(), false);
+        xhr.send();
+        var d = JSON.parse(xhr.responseText);
+        if(d.code === 0 && d.data && d.data.length > 0){
+            var h = '';
+            for(var i=0;i<d.data.length;i++){
+                var l = d.data[i];
+                var stClass = 'live';
+                var stText = '已发布';
+                if(l.status === '已下架'){ stClass = 'off'; stText = '已下架'; }
+                if(l.status === '待审核'){ stClass = 'off'; stText = '待审核'; }
+                var commHtml = '佣金 '+l.commission+'%';
+                if(l.redpack > 0) commHtml += ' · 🎁 ¥'+l.redpack;
+                var thumbs = '';
+                if(l.photos && l.photos.length > 0){
+                    thumbs = '<div class="thumbs">';
+                    for(var p=0;p<Math.min(l.photos.length,5);p++){
+                        thumbs += '<img src="'+l.photos[p]+'">';
+                    }
+                    thumbs += '</div>';
+                }
+                h += '<div class="my-listing">'+
+                    '<div class="top"><h4>'+escHtml(l.title)+'</h4><span class="st '+stClass+'">'+stText+'</span></div>'+
+                    '<div class="meta">📍 '+escHtml(l.address)+' · '+(l.area||'')+'<br>¥'+(l.price||0)+'/月 · '+commHtml+'</div>'+
+                    thumbs+
+                    '<div class="btns">'+
+                        '<button style="background:#b09670;color:#fff" onclick="generateMyPoster()">📢 生成我的海报</button>' +
+                        (l.status !== '已下架' ? '<button class="danger" onclick="offlineListing(\\''+l.id+'\\')">⬇️ 下架</button><button onclick="editListing(\\''+l.id+'\\')">✏️ 编辑</button>' : '<button onclick="relistListing(\\''+l.id+'\\')">🔄 重新发布</button>')+
+                    '</div></div>';
+            }
+            el.innerHTML = h;
+        } else {
+            el.innerHTML = '<div class="empty-state">📭 暂无房源<br><span style="font-size:11px;">上传房源后，会显示在这里</span></div>';
+        }
+    } catch(e){
+        el.innerHTML = '<div class="empty-state">⚠️ 加载失败</div>';
+    }
+}
+
+// 下架
+function offlineListing(id){
+    if(!confirm('确定下架该房源？下架后租客将无法看到此房源')) return;
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/jincheng/listing/offline?_t='+Date.now(), false);
+        xhr.setRequestHeader('Content-Type','application/json');
+        xhr.send(JSON.stringify({id:id, partner_id:PARTNER_ID}));
+        var d = JSON.parse(xhr.responseText);
+        if(d.code === 0){ showTip('已下架'); loadMyListings(); }
+        else showTip('操作失败');
+    } catch(e){ showTip('网络错误'); }
+}
+
+// 重新发布
+function relistListing(id){
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/jincheng/listing/relist?_t='+Date.now(), false);
+        xhr.setRequestHeader('Content-Type','application/json');
+        xhr.send(JSON.stringify({id:id, partner_id:PARTNER_ID}));
+        var d = JSON.parse(xhr.responseText);
+        if(d.code === 0){ showTip('已重新发布'); loadMyListings(); }
+        else showTip('操作失败');
+    } catch(e){ showTip('网络错误'); }
+}
+
+// 编辑（简化为重新提交，后续可迭代为弹窗编辑）
+function editListing(id){
+    showTip('请在页面顶部重新上传编辑后的房源');
+    switchTab('upload');
+}
+
+// 收益Tab切换
+var earnTab = 'comm';
+
+function switchEarnTab(tab){
+    earnTab = tab;
+    document.getElementById('tabComm').style.background = tab==='comm' ? '#b09670' : '#f0e8dc';
+    document.getElementById('tabComm').style.color = tab==='comm' ? '#fff' : '#8a7a6a';
+    document.getElementById('tabView').style.background = tab==='view' ? '#b09670' : '#f0e8dc';
+    document.getElementById('tabView').style.color = tab==='view' ? '#fff' : '#8a7a6a';
+    loadEarnings();
+}
+
+// 加载收益/带看
+function loadEarnings(){
+    var el = document.getElementById('earnContent');
+    if(earnTab === 'comm'){
+        // 佣金记录
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/partner/commission?partner='+PARTNER_ID+'&_t='+Date.now(), false);
+            xhr.send();
+            var d = JSON.parse(xhr.responseText);
+            if(d.code === 0 && d.records && d.records.length > 0){
+                var h = '<div style="display:flex;gap:10px;margin-bottom:10px">'+
+                    '<div style="flex:1;background:#fff;border-radius:10px;padding:12px;text-align:center;border:1px solid #e8e0d4"><div style="font-size:20px;font-weight:bold;color:#b09670">¥'+(d.total||0)+'</div><div style="font-size:10px;color:#8a7a6a;margin-top:2px">总佣金</div></div>'+
+                    '<div style="flex:1;background:#fff;border-radius:10px;padding:12px;text-align:center;border:1px solid #e8e0d4"><div style="font-size:20px;font-weight:bold;color:#5a8a4a">¥'+(d.paid||0)+'</div><div style="font-size:10px;color:#8a7a6a;margin-top:2px">已结算</div></div>'+
+                    '<div style="flex:1;background:#fff;border-radius:10px;padding:12px;text-align:center;border:1px solid #e8e0d4"><div style="font-size:20px;font-weight:bold;color:#c86a5a">¥'+(d.pending||0)+'</div><div style="font-size:10px;color:#8a7a6a;margin-top:2px">待结算</div></div></div>'+
+                    '<div style="text-align:center;margin-bottom:10px"><span onclick="showWithdraw('+(d.pending||0)+')" style="display:inline-block;padding:8px 20px;border-radius:8px;font-size:12px;font-weight:600;background:linear-gradient(135deg,#5a8a4a,#4a7a3a);color:#fff;cursor:pointer">💸 申请提现</span></div>';
+                for(var i=0;i<d.records.length;i++){
+                    var e = d.records[i];
+                    h += '<div class="card" style="padding:12px;"><div class="form-row"><span style="font-size:13px;color:#2c241a;font-weight:600;">'+escHtml(e.title||'房源佣金')+'</span><span style="font-size:13px;'+((e.status==='paid'?'color:#5a8a4a':'color:#c86a5a'))+';font-weight:bold;">¥'+e.amount+'</span></div><div style="font-size:10px;color:#8a7a6a;margin-top:4px;">'+escHtml(e.time)+' · '+escHtml(e.note||'')+' · <span style="color:'+(e.status==='paid'?'#5a8a4a':'#c86a5a')+'">'+(e.status==='paid'?'已结算':'待结算')+'</span></div></div>';
+                }
+                el.innerHTML = h;
+            } else {
+                el.innerHTML = '<div class="empty-state">📊 暂无佣金<br><span style="font-size:11px;">房源成交后佣金会显示在这里</span></div>';
+            }
+        } catch(e){
+            el.innerHTML = '<div class="empty-state">⚠️ 加载失败</div>';
+        }
+    } else {
+        // 带看记录
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/partner/views?partner='+PARTNER_ID+'&_t='+Date.now(), false);
+            xhr.send();
+            var d = JSON.parse(xhr.responseText);
+            if(d.code === 0 && d.views && d.views.length > 0){
+                var h = '<div style="font-size:11px;color:#8a7a6a;margin-bottom:8px">📋 共 '+d.views.length+' 条带看记录</div>'+
+                    '<div style="display:flex;gap:6px;margin-bottom:10px">'+
+                    '<span class="add-view-btn" onclick="showAddView()" style="flex:1;padding:10px;text-align:center;border-radius:8px;font-size:12px;font-weight:600;background:linear-gradient(135deg,#b09670,#8a7355);color:#fff;cursor:pointer">+ 新增带看</span></div>';
+                for(var i=0;i<d.views.length;i++){
+                    var v = d.views[i];
+                    h += '<div class="card" style="padding:12px;"><div style="display:flex;justify-content:space-between"><span style="font-size:13px;font-weight:600;color:#2c241a">'+escHtml(v.customer)+'</span><span style="font-size:11px;color:#8a7a6a">'+v.time+'</span></div><div style="font-size:11px;color:#6a5a4a;margin-top:3px">📞 '+escHtml(v.phone)+'</div>'+(v.room?'<div style="font-size:11px;color:#6a5a4a;margin-top:2px">🏠 '+escHtml(v.room)+'</div>':'')+(v.note?'<div style="font-size:10px;color:#8a7a6a;margin-top:4px">📝 '+escHtml(v.note)+'</div>':'')+'</div>';
+                }
+                el.innerHTML = h;
+            } else {
+                el.innerHTML = '<div class="empty-state">📋 暂无带看记录<br><span style="font-size:11px;">点击下方按钮新增带看记录</span></div>'+
+                    '<div style="text-align:center;margin-top:10px"><span onclick="showAddView()" style="display:inline-block;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#b09670,#8a7355);color:#fff;cursor:pointer">+ 新增带看</span></div>';
+            }
+        } catch(e){
+            el.innerHTML = '<div class="empty-state">⚠️ 加载失败</div>';
+        }
+    }
+}
+
+// 新增带看弹窗
+function showAddView(){
+    var cus = prompt('请输入客户姓名');
+    if(!cus) return;
+    var phone = prompt('请输入客户电话');
+    if(!phone) return;
+    var room = prompt('看哪个房源？（可选）') || '';
+    var note = prompt('备注信息（可选）') || '';
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/partner/add_view?_t='+Date.now(), false);
+        xhr.setRequestHeader('Content-Type','application/json');
+        xhr.send(JSON.stringify({partner:PARTNER_ID, customer:cus, phone:phone, room:room, note:note}));
+        var d = JSON.parse(xhr.responseText);
+        if(d.code===0){ showTip('✅ 带看记录已提交'); loadEarnings(); }
+        else showTip('❌ '+d.msg);
+    } catch(e){ showTip('❌ 网络异常'); }
+}
+
+// 加载信用分
+function loadCredit(){
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/jincheng/credit?partner_id='+PARTNER_ID+'&_t='+Date.now(), false);
+        xhr.send();
+        var d = JSON.parse(xhr.responseText);
+        if(d.code === 0){ updateCredit(d.score); }
+    } catch(e){}
+}
+
+function escHtml(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+
+// 生成合作商综合海报（旗下所有房源，不单独生成每个房源）
+function generateMyPoster(){
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/jincheng/partner_listings?partner_id='+PARTNER_ID+'&_t='+Date.now(), false);
+        xhr.send();
+        var d = JSON.parse(xhr.responseText);
+        if(d.code !== 0 || !d.data || d.data.length === 0){
+            showTip('您还没有房源，请先上传');
+            return;
+        }
+        var listings = d.data;
+        // 标题：合作商名称
+        var pName = localStorage.getItem('partner_name') || '合租伙伴';
+        document.getElementById('posterTitle').textContent = pName + '·优质房源';
+        
+        // 价格：展示价格区间
+        var prices = listings.map(function(l){ return l.price || 0; });
+        var minP = Math.min.apply(null, prices);
+        var maxP = Math.max.apply(null, prices);
+        document.getElementById('posterPrice').textContent = '¥' + minP + '~' + maxP + '/月';
+        document.getElementById('posterLocation').textContent = '共 ' + listings.length + ' 套 · 随时看房';
+        
+        // 图片：展示所有房源的首张图
+        var allImgs = [];
+        for(var i=0;i<listings.length;i++){
+            if(listings[i].photos && listings[i].photos.length > 0){
+                allImgs.push(listings[i].photos[0]);
+            }
+            if(allImgs.length >= 3) break;
+        }
+        var imgHtml = '';
+        if(allImgs.length > 0){
+            for(var i=0;i<allImgs.length;i++){
+                imgHtml += '<div style="flex:1;overflow:hidden"><img src="'+allImgs[i]+'" style="width:100%;height:100%;object-fit:cover;display:block"></div>';
+            }
+        } else {
+            imgHtml = '<div style="flex:1;background:#e8e3de;height:120px;display:flex;align-items:center;justify-content:center;font-size:40px">🏠</div>';
+        }
+        document.getElementById('posterImages').innerHTML = imgHtml;
+        
+        // 描述：展示房源列表
+        var descHtml = '';
+        for(var i=0;i<Math.min(listings.length,10);i++){
+            var l = listings[i];
+            var stIcon = l.status === '已发布' ? '🟢' : '⚪';
+            descHtml += stIcon + ' ' + escHtml(l.title) + ' ¥' + (l.price||0) + '/月\n';
+        }
+        if(listings.length > 10) descHtml += '…还有' + (listings.length-10) + '套';
+        document.getElementById('posterDesc').textContent = descHtml || '精装修房源，配套齐全';
+        
+        // 标签
+        document.getElementById('posterTags').innerHTML = '<span style="background:#f0ebe6;padding:2px 8px;border-radius:4px;font-size:10px;color:#5a4a3a">直租无中介费</span><span style="background:#f0ebe6;padding:2px 8px;border-radius:4px;font-size:10px;color:#5a4a3a">' + listings.length + '套房源可选</span>';
+        
+        // 联系方式
+        document.getElementById('posterPhone').textContent = '19376871386';
+        document.getElementById('posterWechat').textContent = 'ogm161413';
+        
+        // 链接：扫码后打开合作商专属页面，显示该合作商所有房源
+        var url = window.location.origin + '/jincheng/poster.html?partner=' + encodeURIComponent(PARTNER_ID);
+        document.getElementById('posterLink').href = url;
+        document.getElementById('qrCode').innerHTML = '<a href="'+url+'" style="font-size:9px;color:#5a7a4a;text-decoration:none;word-break:break-all;padding:4px">📱 扫码看全部房源</a>';
+        
+        document.getElementById('posterModal').classList.add('show');
+    } catch(e){
+        showTip('加载失败，请稍后重试');
+    }
+}
+
+function fillPoster(rm){
+    var priceStr = rm.price_night ? '¥'+rm.price_night+'/晚' : '¥'+rm.price_month+'/月';
+    document.getElementById('posterTitle').textContent = rm.title;
+    document.getElementById('posterPrice').textContent = priceStr;
+    document.getElementById('posterLocation').textContent = '📍 '+rm.location+' · '+rm.area;
+
+    // 图片
+    var imgs = rm.images && rm.images.length > 0 ? rm.images : [];
+    var imgHtml = '';
+    for(var i=0;i<Math.min(imgs.length,3);i++){
+        imgHtml += '<div style="flex:1;overflow:hidden"><img src="'+imgs[i]+'" style="width:100%;height:100%;object-fit:cover;display:block"></div>';
+    }
+    if(!imgHtml) imgHtml = '<div style="flex:1;background:#e8e3de;height:120px;display:flex;align-items:center;justify-content:center;font-size:40px">🏠</div>';
+    document.getElementById('posterImages').innerHTML = imgHtml;
+
+    // 描述
+    document.getElementById('posterDesc').textContent = rm.desc || '精装修房源，配套齐全，拎包入住';
+
+    // 标签
+    var tagHtml = '';
+    if(rm.tags && rm.tags.length){
+        for(var i=0;i<rm.tags.length;i++){
+            tagHtml += '<span style="background:#f0ebe6;padding:2px 8px;border-radius:4px;font-size:10px;color:#5a4a3a">'+escHtml(rm.tags[i])+'</span>';
+        }
+    }
+    document.getElementById('posterTags').innerHTML = tagHtml;
+
+    // 联系方式
+    var phone = rm.contact && rm.contact.phone ? rm.contact.phone : '19376871386';
+    var wechat = rm.contact && rm.contact.wechat ? rm.contact.wechat : 'ogm161413';
+    document.getElementById('posterPhone').textContent = phone;
+    document.getElementById('posterWechat').textContent = wechat;
+
+    // 链接
+    var url = window.location.origin + '/jincheng/poster.html?room=' + encodeURIComponent(rm.title);
+    document.getElementById('posterLink').href = url;
+
+    // QR码区域显示链接
+    document.getElementById('qrCode').innerHTML = '<a href="'+url+'" style="font-size:9px;color:#5a7a4a;text-decoration:none;word-break:break-all;padding:4px">📱 扫码</a>';
+
+    document.getElementById('posterModal').classList.add('show');
+}
+
+function fillPosterFromListing(title){
+    // 从我的房源列表DOM取数据
+    var listings = document.querySelectorAll('.my-listing');
+    for(var i=0;i<listings.length;i++){
+        var h4 = listings[i].querySelector('h4');
+        if(h4 && h4.textContent.indexOf(title) > -1){
+            var meta = listings[i].querySelector('.meta');
+            var priceText = meta ? meta.textContent : '';
+            var imgs = listings[i].querySelectorAll('.thumbs img');
+            var imgHtml = '';
+            if(imgs.length > 0){
+                for(var j=0;j<Math.min(imgs.length,3);j++){
+                    imgHtml += '<div style="flex:1;overflow:hidden"><img src="'+imgs[j].src+'" style="width:100%;height:100%;object-fit:cover;display:block"></div>';
+                }
+            } else {
+                imgHtml = '<div style="flex:1;background:#e8e3de;height:120px;display:flex;align-items:center;justify-content:center;font-size:40px">🏠</div>';
+            }
+            document.getElementById('posterTitle').textContent = title;
+            document.getElementById('posterPrice').textContent = priceText.match(/¥[\d,]+/)?.[0] || '';
+            document.getElementById('posterLocation').textContent = priceText.replace(/¥[\d,]+\/月/g,'').trim() || '';
+            document.getElementById('posterImages').innerHTML = imgHtml;
+            document.getElementById('posterDesc').textContent = '精装修房源，配套齐全，拎包入住';
+            document.getElementById('posterTags').innerHTML = '';
+            document.getElementById('posterPhone').textContent = '19376871386';
+            document.getElementById('posterWechat').textContent = 'ogm161413';
+            var url = window.location.origin + '/jincheng/poster.html?room=' + encodeURIComponent(title);
+            document.getElementById('posterLink').href = url;
+            document.getElementById('qrCode').innerHTML = '<a href="'+url+'" style="font-size:9px;color:#5a7a4a;text-decoration:none;word-break:break-all;padding:4px">📱 扫码</a>';
+            document.getElementById('posterModal').classList.add('show');
+            return;
+        }
+    }
+    showTip('未找到该房源');
+}
+
+function closePoster(){
+    document.getElementById('posterModal').classList.remove('show');
+}
+
+// 提现弹窗
+function showWithdraw(maxAmt){
+    var amt = prompt('可提现余额：¥'+maxAmt+'\n请输入提现金额（元）：');
+    if(!amt) return;
+    amt = parseFloat(amt);
+    if(isNaN(amt) || amt <= 0){ showTip('请输入有效金额'); return; }
+    if(amt > maxAmt){ showTip('提现金额不能超过可提现余额'); return; }
+    var account = prompt('请输入收款账号\n（微信/支付宝/银行卡号）：');
+    if(!account || !account.trim()){ showTip('请输入收款账号'); return; }
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/partner/withdraw?_t='+Date.now(), false);
+        xhr.setRequestHeader('Content-Type','application/json');
+        xhr.send(JSON.stringify({partner:PARTNER_ID, amount:amt, account:account.trim()}));
+        var d = JSON.parse(xhr.responseText);
+        if(d.code===0){ showTip('✅ '+d.msg); loadEarnings(); }
+        else showTip('❌ '+d.msg);
+    } catch(e){ showTip('❌ 网络异常'); }
+}
+function showTip(msg){
+    var el = document.createElement('div');
+    el.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:999;text-align:center;max-width:280px;background:rgba(44,36,26,0.92);color:#d4c9b8;border:1px solid #4a4040;backdrop-filter:blur(8px);animation:fadeIn 0.2s ease';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function(){ el.style.opacity='0'; el.style.transition='opacity 0.3s'; setTimeout(function(){el.remove()},300) }, 2000);
+}
+
+// 初始化
+loadCredit();
+initAppliances();
+</script>
+<style>
+@keyframes fadeIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.9)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+</style>
+</body>
+</html>

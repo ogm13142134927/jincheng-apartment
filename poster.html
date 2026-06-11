@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>金城公寓 · 扫码看房</title>
+<link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="金城租房">
+    <link rel="icon" type="image/svg+xml" href="/icon.svg">
+    <link rel="apple-touch-icon" href="/icon-192.svg">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'PingFang SC','Helvetica Neue',sans-serif;background:#f5f0eb;color:#2c241a}
+.header{position:relative;width:100%;overflow:hidden;background:#2c241a}
+.header img{width:100%;display:block;max-height:50vh;object-fit:cover}
+.body{padding:16px}
+.body h1{font-size:20px;font-weight:700;margin-bottom:6px}
+.body .meta{font-size:13px;color:#6a5a4a;margin-bottom:10px;line-height:1.6}
+.body .price{font-size:24px;font-weight:700;color:#5a7a4a;margin-bottom:8px}
+.body .price small{font-size:13px;font-weight:400;color:#8a7a6a}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.tags span{background:#e8e3de;padding:4px 10px;border-radius:6px;font-size:11px;color:#5a4a3a}
+.appliances{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.appliances span{background:#e8f0e0;padding:4px 10px;border-radius:6px;font-size:11px;color:#4a6a3a}
+.section{margin:14px 0}
+.section h4{font-size:13px;font-weight:600;margin-bottom:6px;color:#3a2a1a}
+.section p{font-size:13px;color:#5a4a3a;line-height:1.7}
+.contact{background:#fff;border-radius:12px;padding:14px;margin-top:14px}
+.contact .row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
+.contact .row .lbl{color:#8a7a6a}
+.contact .row .val{font-weight:600;color:#2c241a}
+.footer{text-align:center;padding:20px;font-size:11px;color:#8a7a6a}
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px}
+.gallery img{width:100%;height:120px;object-fit:cover;border-radius:4px;cursor:pointer}
+.gallery img:first-child:nth-last-child(1){height:auto;max-height:300px;grid-column:1/-1}
+.room-card{background:#fff;border-radius:12px;border:1px solid #e8e0d4;margin-bottom:10px;overflow:hidden;display:flex}
+.room-card img{width:120px;height:90px;object-fit:cover;flex-shrink:0}
+.room-card .info{flex:1;padding:10px 12px;display:flex;flex-direction:column;justify-content:center}
+.room-card .info h3{font-size:14px;font-weight:600;color:#2c241a;margin-bottom:3px}
+.room-card .info .sub{font-size:11px;color:#8a7a6a;margin-bottom:4px}
+.room-card .info .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:#e8f0e0;color:#4a6a3a;margin-right:3px}
+.room-card .info .p{font-weight:700;color:#5a7a4a;font-size:16px}
+.room-card .info .p small{font-size:11px;font-weight:400}
+.section-title{font-size:15px;font-weight:600;margin:14px 0 8px;padding-left:6px;border-left:3px solid #b09670;color:#3a2a1a}
+.empty-text{text-align:center;padding:30px;color:#8a7a6a;font-size:13px}
+/* 二维码区域 */
+.qr-section{background:#fff;border-radius:12px;padding:16px;margin-top:14px;text-align:center}
+.qr-section h4{font-size:14px;font-weight:600;color:#3a2a1a;margin-bottom:4px}
+.qr-section .qr-hint{font-size:11px;color:#8a7a6a;margin-bottom:12px}
+.qr-section .qr-box{display:inline-block;padding:8px;background:#fff;border:2px solid #e8e0d4;border-radius:8px}
+.qr-section .qr-box canvas,.qr-section .qr-box img{display:block}
+.qr-section .qr-url{font-size:10px;color:#8a7a6a;margin-top:8px;word-break:break-all}
+.qr-section .qr-actions{display:flex;gap:8px;margin-top:10px;justify-content:center}
+.qr-section .qr-actions button{background:#b09670;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer}
+.qr-section .qr-actions button:active{opacity:0.8}
+.qr-print-btn{background:#5a7a4a!important}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js')}</script>
+</head>
+<body>
+<div id="app">
+    <div id="loading" style="text-align:center;padding:60px 20px;color:#8a7a6a;font-size:14px">加载中...</div>
+    <div id="content" style="display:none"></div>
+</div>
+<script>
+var allRooms = [];
+
+function loadPage(){
+    var params = new URLSearchParams(window.location.search);
+    var roomName = params.get('room') || '';
+    var partnerId = params.get('partner') || '';
+
+    if(partnerId){
+        loadPartnerListings(partnerId);
+    } else if(roomName){
+        loadProjectRooms(roomName);
+    } else {
+        document.getElementById('loading').innerHTML = '<div style="font-size:40px;margin-bottom:10px">🏠</div><div>金城公寓 · 扫码看房</div>';
+    }
+}
+
+function loadPartnerListings(partnerId){
+    fetch('/api/jincheng/partner_listings?partner_id='+encodeURIComponent(partnerId)+'&t='+Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+        if(d.code !== 0 || !d.data || d.data.length === 0){
+            document.getElementById('content').innerHTML = '<div class="empty-text">暂无房源信息</div>';
+            return;
+        }
+        renderList(d.data, '合作商房源');
+    }).catch(function(){
+        document.getElementById('loading').innerHTML = '<div style="font-size:40px;margin-bottom:10px">⚠️</div><div>加载失败</div>';
+    });
+}
+
+function loadProjectRooms(roomName){
+    fetch('/rooms.json?t='+Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(rooms){
+        allRooms = rooms;
+        rooms = rooms.filter(function(r){return r.status !== '下架'});
+        var targetRoom = null;
+        for(var i=0;i<rooms.length;i++){
+            if(rooms[i].title === roomName || rooms[i].title.indexOf(roomName) > -1){
+                targetRoom = rooms[i];
+                break;
+            }
+        }
+        if(!targetRoom){
+            document.getElementById('loading').innerHTML = '<div style="font-size:40px;margin-bottom:10px">🔍</div><div>未找到该房源</div>';
+            return;
+        }
+
+        var projectKey = '';
+        var loc = targetRoom.location || '';
+        var parts = loc.split('·');
+        if(parts.length > 0){
+            projectKey = parts[0].trim();
+            for(var p=1; p<parts.length; p++){
+                if(parts[p].indexOf('栋') > -1){
+                    projectKey += '·' + (parts[p].trim().match(/.*?栋/) || [parts[p].trim()])[0];
+                    break;
+                }
+            }
+        }
+
+        var projectRooms = [];
+        for(var i=0;i<rooms.length;i++){
+            var r = rooms[i];
+            if(r.source !== 'self') continue;
+            var rloc = r.location || '';
+            if(rloc.indexOf(projectKey) > -1 || projectKey.indexOf(rloc) > -1){
+                projectRooms.push(r);
+            }
+        }
+
+        if(projectRooms.length === 0){
+            renderSingle(targetRoom);
+        } else {
+            projectRooms.sort(function(a,b){
+                var aScore = (a.status === '空置' ? 0 : 1);
+                var bScore = (b.status === '空置' ? 0 : 1);
+                return aScore - bScore;
+            });
+            renderList(projectRooms, projectKey);
+        }
+    }).catch(function(){
+        document.getElementById('loading').innerHTML = '<div style="font-size:40px;margin-bottom:10px">⚠️</div><div>加载失败</div>';
+    });
+}
+
+function renderList(rooms, title){
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+    var vacant = 0, rented = 0;
+    for(var i=0;i<rooms.length;i++){
+        if(rooms[i].status === '空置') vacant++;
+        else rented++;
+    }
+
+    var html = '<div class="body">'+
+        '<h1>'+escHtml(title)+'</h1>'+
+        '<div class="meta">共 '+rooms.length+' 套 · 🟢 '+vacant+' 套可租 · ⚪ '+rented+' 套已租</div>';
+
+    for(var i=0;i<rooms.length;i++){
+        var r = rooms[i];
+        var priceStr = r.price_night ? '¥'+r.price_night+'<small>/晚</small>' : '¥'+r.price_month+'<small>/月</small>';
+        var img = (r.images && r.images.length > 0) ? r.images[0] : 'https://picsum.photos/seed/'+r.id+'/400/300';
+        var tagHtml = '';
+        if(r.tags && r.tags.length){
+            for(var t=0;t<Math.min(r.tags.length,3);t++){
+                tagHtml += '<span class="tag">'+escHtml(r.tags[t])+'</span>';
+            }
+        }
+        var stLabel = r.status === '空置' ? '🟢 可租' : '⚪ 已租';
+        var stColor = r.status === '空置' ? '#5a7a4a' : '#8a7a6a';
+
+        html += '<div class="room-card">'+
+            '<img src="'+img+'" onclick="window.open(\''+img+'\')">'+
+            '<div class="info">'+
+                '<h3>'+escHtml(r.title)+'</h3>'+
+                '<div class="sub">'+escHtml(r.location)+' · '+escHtml(r.area)+'</div>'+
+                '<div>'+tagHtml+'<span class="tag" style="background:#e0d8cc;color:'+stColor+'">'+stLabel+'</span></div>'+
+                '<div class="p">'+priceStr+'</div>'+
+            '</div></div>';
+    }
+
+    var phone = '19376871386';
+    var wechat = 'ogm161413';
+    if(rooms.length > 0 && rooms[0].contact){
+        phone = rooms[0].contact.phone || phone;
+        wechat = rooms[0].contact.wechat || wechat;
+    }
+
+    html += '<div class="contact">'+
+        '<div class="row"><span class="lbl">📞 电话</span><span class="val"><a href="tel:'+phone+'" style="color:#5a7a4a;text-decoration:none">'+phone+'</a></span></div>'+
+        '<div class="row"><span class="lbl">💚 微信</span><span class="val">'+wechat+'</span></div>'+
+        '</div>'+
+        '<div class="qr-section" id="qrSection"></div>'+
+        '</div>'+
+        '<div class="footer">金城公寓 · 扫码看房</div>';
+
+    document.getElementById('content').innerHTML = html;
+    setTimeout(function(){ generateQR(title); }, 100);
+}
+
+function renderSingle(rm){
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+    var imgs = rm.images && rm.images.length > 0 ? rm.images : ['https://picsum.photos/seed/'+rm.id+'/800/600'];
+    var priceStr = rm.price_night ? '¥'+rm.price_night+'<small>/晚</small>' : '¥'+rm.price_month+'<small>/月</small>';
+
+    var galHtml = '';
+    if(imgs.length === 1){
+        galHtml = '<div class="gallery"><img src="'+imgs[0]+'" onclick="window.open(this.src)"></div>';
+    }else{
+        galHtml = '<div class="gallery">';
+        for(var i=0;i<Math.min(imgs.length,4);i++){
+            galHtml += '<img src="'+imgs[i]+'" onclick="window.open(this.src)">';
+        }
+        galHtml += '</div>';
+    }
+
+    var tagsHtml = '';
+    if(rm.tags && rm.tags.length){
+        tagsHtml = '<div class="tags">';
+        for(var i=0;i<rm.tags.length;i++) tagsHtml += '<span>'+escHtml(rm.tags[i])+'</span>';
+        tagsHtml += '</div>';
+    }
+
+    var appHtml = '';
+    if(rm.appliances && rm.appliances.length){
+        appHtml = '<div class="appliances">';
+        for(var i=0;i<rm.appliances.length;i++) appHtml += '<span>'+escHtml(rm.appliances[i])+'</span>';
+        appHtml += '</div>';
+    }
+
+    var fsHtml = '';
+    if(rm.fengshui){
+        var fsMap = {'极品':'👑 极品风水——格局方正、采光充足、布局合理','上佳':'🍃 上佳风水——户型正气、明厅明卫','中等':'⭐ 中等风水——部分方位有不足','普通':'📐 普通风水——户型常规'};
+        fsHtml = '<div class="section"><h4>🍃 风水评级</h4><p>'+ (fsMap[rm.fengshui]||'') +'</p></div>';
+    }
+
+    var phone = rm.contact && rm.contact.phone ? rm.contact.phone : '19376871386';
+    var wechat = rm.contact && rm.contact.wechat ? rm.contact.wechat : 'ogm161413';
+    var contactHtml = '<div class="contact">'+
+        '<div class="row"><span class="lbl">📞 电话</span><span class="val"><a href="tel:'+phone+'" style="color:#5a7a4a;text-decoration:none">'+phone+'</a></span></div>'+
+        '<div class="row"><span class="lbl">💚 微信</span><span class="val">'+wechat+'</span></div>'+
+        '</div>';
+
+    var descHtml = rm.desc ? '<div class="section"><h4>📝 房源介绍</h4><p>'+escHtml(rm.desc)+'</p></div>' : '';
+
+    document.getElementById('content').innerHTML =
+        '<div class="header"><img src="'+imgs[0]+'">'+(imgs.length>1?'<div class="count">1/'+imgs.length+'</div>':'')+'</div>'+
+        '<div class="body">'+
+            '<h1>'+escHtml(rm.title)+'</h1>'+
+            '<div class="meta">📍 '+escHtml(rm.location)+' · '+escHtml(rm.area)+' · '+escHtml(rm.orientation)+'</div>'+
+            '<div class="price">'+priceStr+'</div>'+
+            tagsHtml+
+            appHtml+
+            descHtml+
+            fsHtml+
+            galHtml+
+            contactHtml+
+            '<div class="qr-section" id="qrSection"></div>'+
+        '</div>'+
+        '<div class="footer">金城公寓 · 扫码看房</div>';
+    setTimeout(function(){ generateQR(rm.title); }, 100);
+}
+
+function escHtml(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+
+// ===== 二维码生成 =====
+function generateQR(title){
+    var qrEl = document.getElementById('qrSection');
+    if(!qrEl) return;
+    var url = window.location.origin + '/jincheng/poster.html?room=' + encodeURIComponent(title);
+    var html = '<h4>📱 扫码看房</h4>'+
+        '<div class="qr-hint">扫一扫查看房源详情，支持微信/浏览器扫码</div>'+
+        '<div class="qr-box" id="qrBox"></div>'+
+        '<div class="qr-url">'+url+'</div>'+
+        '<div class="qr-actions">'+
+            '<button onclick="saveQR()">💾 保存二维码</button>'+
+            '<button class="qr-print-btn" onclick="printQR()">🖨️ 打印张贴</button>'+
+        '</div>';
+    qrEl.innerHTML = html;
+    if(typeof QRCode !== 'undefined'){
+        new QRCode(document.getElementById('qrBox'), {
+            text: url,
+            width: 180,
+            height: 180,
+            colorDark: '#2c241a',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    } else {
+        var img = document.createElement('img');
+        img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(url);
+        img.style.display = 'block';
+        img.style.margin = '0 auto';
+        document.getElementById('qrBox').appendChild(img);
+    }
+}
+
+function saveQR(){
+    var canvas = document.querySelector('#qrBox canvas');
+    var img = document.querySelector('#qrBox img');
+    if(canvas){
+        var link = document.createElement('a');
+        link.download = '金城公寓-扫码看房.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    } else if(img){
+        var link = document.createElement('a');
+        link.download = '金城公寓-扫码看房.png';
+        link.href = img.src;
+        link.target = '_blank';
+        link.click();
+    }
+}
+
+function printQR(){
+    var qrBox = document.getElementById('qrBox');
+    var title = document.querySelector('.body h1');
+    var roomName = title ? title.textContent : '金城公寓';
+    var printWin = window.open('', '_blank', 'width=400,height=500');
+    var qrHTML = qrBox.innerHTML;
+    printWin.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>打印二维码</title>'+
+        '<style>body{text-align:center;padding:20px;font-family:sans-serif}'+
+        'h2{font-size:16px;margin-bottom:10px;color:#2c241a}'+
+        'p{font-size:12px;color:#8a7a6a;margin-bottom:16px}'+
+        '@media print{body{margin:0;padding:10px}}</style></head>'+
+        '<body><h2>'+roomName+'</h2><p>微信扫码查看房源详情</p>'+qrHTML+'</body></html>');
+    printWin.document.close();
+    setTimeout(function(){ printWin.print(); }, 500);
+}
+
+loadPage();
+</script>
+</body>
+</html>
